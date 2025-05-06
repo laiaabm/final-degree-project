@@ -9,10 +9,11 @@ from PIL import Image
 from typing import Any, Tuple
 from skimage.feature import peak_local_max
 
+
 class TileDataset(Dataset):
-    '''
+    """
     Dataset class for loading images from a list of file paths.
-    '''
+    """
     def __init__(self, image_paths: list):
         """
         Args:
@@ -29,7 +30,6 @@ class TileDataset(Dataset):
         image = Image.open(image_path)
         image = np.array(image)
         return image, image_path
-
 
 
 class SegNCA(nn.Module):
@@ -129,7 +129,6 @@ class SegNCA(nn.Module):
         return out, x
     
 
-
 class PostProcessor:
     """
     Post-processor for NCA predictions.
@@ -165,8 +164,3 @@ class PostProcessor:
             centroids = np.array(filtered_centroids)
 
         return centroids
-
-
-
-
-

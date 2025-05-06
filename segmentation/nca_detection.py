@@ -1,64 +1,75 @@
 import os
-import matplotlib.pyplot as plt
+import argparse
 import torch
+import cv2  # type: ignore
+import numpy as np
 from torch.utils import data
 from tools import TileDataset, SegNCA, PostProcessor
-from PIL import Image
-import cv2 # type: ignore
-import numpy as np
 
-def prepare_output_directory(output_dir):
-    os.makedirs(output_dir, exist_ok=True)
 
-def load_dataset(image_dir):
-    data_path = [os.path.join(image_dir, file) for file in os.listdir(image_dir)]
-    data_name = [file for file in os.listdir(image_dir)]
-    dataset = TileDataset(data_path)
-    loader = data.DataLoader(dataset, batch_size=1)
-    return loader, data_name
-
-def load_model(channel_n, steps):
-    model = SegNCA(channel_n=channel_n, hidden_size=128)
-    model.load_state_dict(torch.load("./pretrained/nca_weights", map_location=torch.device('cpu')))
+def load_model(model_path, channel_n=6, hidden_size=128):
+    """
+    Load the SegNCA model.
+    """
+    model = SegNCA(channel_n=channel_n, hidden_size=hidden_size)
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
     model.eval()
     return model
 
-def process_image(image, model, steps, post_processor, idx, data_name, output_dir):
-    with torch.no_grad():
-        out, _ = model(image, steps=steps, fire_rate=0.5)
-    points = post_processor.get_coordinates(out)
-
+def annotate_image(image, points):
+    """
+    Draw circles on the detected points over the image.
+    """
     image_np = image[0].numpy()
-
     for point in points:
         x, y = int(point[0]), int(point[1])
         cv2.circle(image_np, (x, y), radius=5, color=(255, 0, 0), thickness=-1)
+    return image_np
 
-    # Store the Image
-    image_filename = data_name[idx]
-    image_path = os.path.join(output_dir, image_filename)
-    cv2.imwrite(image_path, cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR))
+def save_annotated_image(image_np, output_path):
+    """
+    Save the annotated image.
+    """
+    cv2.imwrite(output_path, cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR))
 
-def main():
-    # Configuration
-    image_dir = "/ictstr01/home/aih/laia.mana/project/net/"
-    OUTPUT_DIR = "/ictstr01/home/aih/laia.mana/project/net_out"
-    channel_n = 6
-    steps = 6
+def main(input_dir, output_dir):
+    if not os.path.isdir(input_dir):
+        raise FileNotFoundError(f"No valid input dir: {input_dir}")
 
-    # Prepare the output directory
-    prepare_output_directory(OUTPUT_DIR)
+    os.makedirs(output_dir, exist_ok=True)
+    print(f"Input: {input_dir}")
+    print(f"Output: {output_dir}")
 
-    # Load dataset and data names
-    loader, data_name = load_dataset(image_dir)
-
-    # Load model and post-processor
-    model = load_model(channel_n, steps)
+    # Load the model and post-processor
+    model = load_model(MODEL_PATH)
     post_processor = PostProcessor(mode="max", level=3)
 
-    # Process each image
+    # Prepare the dataset
+    data_path = [os.path.join(input_dir, file) for file in os.listdir(input_dir)]
+    data_name = [file for file in os.listdir(input_dir)]
+    dataset = TileDataset(data_path)
+    loader = data.DataLoader(dataset, batch_size=1)
+
     for idx, image in enumerate(loader):
-        process_image(image, model, steps, post_processor, idx, data_name, OUTPUT_DIR)
+        with torch.no_grad():
+            out, _ = model(image, steps=STEPS, fire_rate=0.5)
+        points = post_processor.get_coordinates(out)
+
+        annotated_image = annotate_image(image, points)
+
+        output_filename = data_name[idx]
+        output_path = os.path.join(output_dir, output_filename)
+        save_annotated_image(annotated_image, output_path)
 
 if __name__ == "__main__":
-    main()
+    # Model Parameters
+    CHANNEL_N = 6
+    STEPS = 6
+    MODEL_PATH = "./nca-net/nca_weights"
+
+    parser = argparse.ArgumentParser(description="WBC segmentation and annotation")
+    parser.add_argument("--input_dir", required=True, help="Input directory with images")
+    parser.add_argument("--output_dir", required=True, help="Output directory to save annotated images")
+
+    args = parser.parse_args()
+    main(args.input_dir, args.output_dir)

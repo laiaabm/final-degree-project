@@ -16,10 +16,11 @@ from PIL import Image
 import numpy as np
 import shutil
 
+
 def read_tiles(tiles_folder):
-    '''
+    """
     Generator that reads PNG tiles from a directory and normalizes pixel values.
-    '''
+    """
     tile_files = glob(os.path.join(tiles_folder, "*.png"))
     for tile_path in tile_files:
         image = Image.open(tile_path)

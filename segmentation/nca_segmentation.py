@@ -6,6 +6,7 @@ import numpy as np
 from torch.utils import data
 from tools import TileDataset, SegNCA, PostProcessor
 
+
 def load_model():
     """
     Load SegNCA model
@@ -83,7 +84,7 @@ if __name__ == "__main__":
     CHANNEL_N = 6
     STEPS = 6
     MARGIN = 20
-    MODEL_PATH = "./pretrained/nca_weights"
+    MODEL_PATH = "./nca-net/nca_weights"
 
     parser = argparse.ArgumentParser(description="wbc segmentation")
     parser.add_argument("--input_dir", required=True, help="input directory with images")
