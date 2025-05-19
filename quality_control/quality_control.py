@@ -1,5 +1,6 @@
 """
-This Python script is modified based on the work available at https://github.com/josegcpa/haemorasis/blob/main/scripts/python/quality_control.py 
+This Python script is modified based on the work available at:
+https://github.com/josegcpa/haemorasis/blob/main/scripts/python/quality_control.py 
 Original repository: https://github.com/josegcpa/haemorasis/tree/main 
 
 Predicts which tiles are of good quality from a folder of tiles (PNG format)
@@ -33,7 +34,7 @@ def main(tiles_folder, checkpoint_path, output_folder, batch_size):
 
     # Define the shapes and output types for the TensorFlow dataset
     output_types = (tf.float32, tf.string)
-    output_shapes = ([None, None, n_channels], []) # No fixed height or width
+    output_shapes = ([None, None, CHANNELS_N], []) # No fixed height or width
     tf_dataset = tf.data.Dataset.from_generator(
         lambda: read_tiles(tiles_folder),
         output_types=output_types,
@@ -59,11 +60,13 @@ def main(tiles_folder, checkpoint_path, output_folder, batch_size):
                 shutil.copy(tile_name, os.path.join(output_folder, os.path.basename(tile_name)))
 
 if __name__ == "__main__":
-    n_channels = 3
+    CHANNELS_N = 3
+
     parser = argparse.ArgumentParser(description='Predicts which tiles are of good quality from a folder of PNG tiles and saves them.')
     parser.add_argument('--tiles_folder', dest='tiles_folder', action='store', type=str, required=True, help="Path to folder containing the tiles.")
     parser.add_argument('--checkpoint_path', dest='checkpoint_path', action='store', type=str, required=True, help='Path to checkpoint.')
     parser.add_argument('--output_folder', dest='output_folder', action='store', type=str, required=True, help='Path to folder where good-quality tiles will be saved.')
     parser.add_argument('--batch_size', dest='batch_size', action='store', type=int, required=True, help='Size of mini batch.')
+    
     args = parser.parse_args()
     main(args.tiles_folder, args.checkpoint_path, args.output_folder, args.batch_size)

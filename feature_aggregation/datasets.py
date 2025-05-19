@@ -1,7 +1,4 @@
-import os
-import numpy as np
 import pandas as pd
-import torch
 import h5py
 
 def get_datasets_kfold(kfold=0, data='', encoder='', label_dict=None):

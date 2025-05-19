@@ -1,13 +1,10 @@
-import datasets
-import modules
 import os
-import argparse
-import torch.backends.cudnn as cudnn
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 import pandas as pd
+
+import datasets
+import modules
 
 from sklearn.metrics import roc_auc_score, f1_score, accuracy_score, confusion_matrix
 from parser_utils import args_parser_test

@@ -9,97 +9,106 @@ import pandas as pd
 import os
 from sklearn.model_selection import StratifiedKFold
 
-def generate_sample_kfold_splits(
-    data_path='',
-    num_splits=5,
-    random_state=42,
-    filename='filename.csv',
-    output_filename='kfold_splits.csv',
-    counts_filename='kfold_counts.csv',
-    label_col='label',
-    sample_col='sample_number'
-):
-    # 1. Load dataset
-    data = pd.read_csv(os.path.join(data_path, filename))
 
-    # 2. Filter out any rows with 'chipunknown' label
-    data = data[data[label_col].isin(['chippositive', 'chipnegative'])]
+def load_data(file_path, label_col):
+    """
+    Load CSV and filter valid labels.
+    """
+    data = pd.read_csv(file_path)
+    return data[data[label_col].isin(['chippositive', 'chipnegative'])]
 
-    # 3. Check required columns
-    if label_col not in data.columns:
-        raise ValueError(f"Label column '{label_col}' not found.")
-    if sample_col not in data.columns:
-        raise ValueError(f"Sample column '{sample_col}' not found.")
+def create_kfold(df, sample_col, label_col, num_splits, random_state):
+    """
+    Assign stratified fold IDs to each unique sample.
+    """
+    unique_samples = df[[sample_col, label_col]].drop_duplicates().reset_index(drop=True)
+    unique_samples['fold_id'] = -1
 
-    # 4. Create save path if not exists
-    save_path = data_path
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-
-    # 5. Create unique samples df
-    sample_df = data[[sample_col, label_col]].drop_duplicates().reset_index(drop=True)
-
-    # Initialize a column in 'sample_df' to store fold labels (0 to 4)
-    sample_df['fold_id'] = -1
-
-    # 6. Assign folds using StratifiedKFold on unique samples
     skf = StratifiedKFold(n_splits=num_splits, shuffle=True, random_state=random_state)
-    for fold_number, (train_index, test_index) in enumerate(skf.split(sample_df, sample_df[label_col])):
-        sample_df.loc[test_index, 'fold_id'] = fold_number
+    for fold, (_, test_idx) in enumerate(skf.split(unique_samples, unique_samples[label_col])):
+        unique_samples.loc[test_idx, 'fold_id'] = fold
 
-    # 7. Merge back fold info into original data
-    data = data.merge(sample_df[[sample_col, 'fold_id']], on=sample_col, how='inner')
+    return df.merge(unique_samples[[sample_col, 'fold_id']], on=sample_col, how='inner')
 
-    # 8. Create fold split columns for each k-fold
+def assign_kfold(df, num_splits):
+    """
+    Create kfold columns with 'train', 'val', and 'test' roles.
+    """
     for i in range(num_splits):
         fold_col = f'kfold{i}'
-        data[fold_col] = 'train'  # default
+        df[fold_col] = 'train'
 
-        test_fold = (i + num_splits - 1) % num_splits  # one step behind i
-        val_fold  = (i + num_splits - 2) % num_splits  # two steps behind i
+        test_fold = (i - 1) % num_splits
+        val_fold = (i - 2) % num_splits
 
-        data.loc[data['fold_id'] == val_fold,  fold_col] = 'val'
-        data.loc[data['fold_id'] == test_fold, fold_col] = 'test'
+        df.loc[df['fold_id'] == val_fold, fold_col] = 'val'
+        df.loc[df['fold_id'] == test_fold, fold_col] = 'test'
 
-    # 9. Save counts per fold
-    fold_results = []
+    return df
+
+def save_counts(df, save_path, counts_filename, num_splits):
+    """
+    Save the count of train/val/test per fold.
+    """
+    results = []
     for i in range(num_splits):
         fold_col = f'kfold{i}'
-        train_count = (data[fold_col] == 'train').sum()
-        val_count   = (data[fold_col] == 'val').sum()
-        test_count  = (data[fold_col] == 'test').sum()
-
-        fold_results.append({
+        results.append({
             'fold': i,
-            'train_count': train_count,
-            'val_count': val_count,
-            'test_count': test_count
+            'train_count': (df[fold_col] == 'train').sum(),
+            'val_count':   (df[fold_col] == 'val').sum(),
+            'test_count':  (df[fold_col] == 'test').sum()
         })
 
-    counts_df = pd.DataFrame(fold_results)
+    counts_df = pd.DataFrame(results)
     counts_df.to_csv(os.path.join(save_path, counts_filename), index=False)
 
-    # 10. Drop helper fold column and save final splits
-    data.drop(columns=['fold_id'], inplace=True)
-    data.to_csv(os.path.join(save_path, output_filename), index=False)
-
-    print(f"\n{num_splits}-fold patient-level splits (Train/Val/Test) saved to '{output_filename}'")
-    print(f"K-Fold counts saved to '{counts_filename}'")
-
-# Example usage:
-in_file = "features_224_dinobloom-g.csv"
-out_file = "kfold_224_dinobloom-g.csv"
-out_counts = "counts_224_dinobloom-g.csv"
-
-data_path = '/ictstr01/home/aih/laia.mana/project/DATA/kfold/'
-
-generate_sample_kfold_splits(
-    data_path=data_path,
+def generate_sample_kfold_splits(
+    data_path,
+    filename,
+    output_filename,
+    counts_filename,
     num_splits=5,
     random_state=42,
-    filename=in_file,
-    output_filename=out_file,
-    counts_filename=out_counts,
     sample_col='sample_number',
     label_col='label'
-)
+):
+    """
+    Full pipeline: load, split, assign folds, and save.
+    """
+    file_path = os.path.join(data_path, filename)
+    df = load_data(file_path, label_col)
+
+    if sample_col not in df.columns or label_col not in df.columns:
+        raise ValueError("Missing required columns in input data.")
+
+    os.makedirs(data_path, exist_ok=True)
+
+    df = create_kfold(df, sample_col, label_col, num_splits, random_state)
+    df = assign_kfold(df, num_splits)
+
+    save_counts(df, data_path, counts_filename, num_splits)
+
+    df.drop(columns=['fold_id'], inplace=True)
+    df.to_csv(os.path.join(data_path, output_filename), index=False)
+
+    print(f"{num_splits}-fold patient-level splits saved to '{output_filename}'")
+    print(f"K-Fold counts saved to '{counts_filename}'")
+
+
+def main():
+    data_path = "/ictstr01/home/aih/laia.mana/project/DATA/attention_visualization/kfold/"
+
+    generate_sample_kfold_splits(
+        data_path=data_path,
+        filename="features_dino.csv",
+        output_filename="kfold_dino.csv",
+        counts_filename="counts_dino.csv",
+        num_splits=5,
+        random_state=42,
+        sample_col='sample_number',
+        label_col='label'
+    )
+
+if __name__ == "__main__":
+    main()
