@@ -1,18 +1,38 @@
-# CHIP Detection in Histology
+# CHIP Detection in Peripheral Blood and Bone Marrow Smears
 
-## Project Description
-This repository contains the code for the detection of CHIP in peripheral blood (PB) smears. Two alternative approaches can be found: a patch-based approach and a single-cell-based approach.
+This repository contains the code for detecting CHIP (Clonal Hematopoiesis of Indeterminate Potential) in peripheral blood (PB) and bone marrow (BM) smears. Two alternative approaches are implemented: a **patch-based** approach and a **single-cell-based** approach.
 
-The input for our analysis consists of blood patches, and the output is the CHIP diagnosis (either CHIP-positive or CHIP-negative).
+## Pipeline Overview
 
-The pipeline for the analysis consists of ___ steps:
-1. Quality control of the PB slides -- Each 224×224 tile goes through a preprocessing step where its quality is assessed. Tiles with excessive or deficient cellular density and/or poor resolution are removed. The corresponding code can be found in `quality_control/quality_control.py`
-2. Segmentation of WBC -- Each individual WBC is segmented in 40x40 single-cell patches using a neural cellular automata approach. This step is only for the *single-cell-based approach*. This code is stored in `segmentation/nca_segment.py`
-3. Feature extraction -- 
-4. Aggregation --
+### 1. Quality Control (PB Slides Only)
+Each 224×224 tile undergoes a preprocessing step to assess its quality. Tiles with excessive or insufficient cellular density and/or poor resolution are discarded. *Code*: `quality_control/quality_control.py`
 
+### 2. White Blood Cell (WBC) Segmentation (Single-Cell-Based Only)
+Each WBC is segmented into 40×40 single-cell patches using a neural cellular automata approach. *Code*: `segmentation/nca_segment.py`
 
+### 3. Feature Extraction
+Features are extracted from the images, either from: 224×224 patches (patch-based), or 40×40 single-cell patches (single-cell-based).
 
-## Contact Information
-Laia Barcenilla: laia.barcenilla@alum.esci.upf.edu  
+Two encoders are available:
+- DinoBloom encoder: `feature_extraction/fe_dinobloom-g.py`
+- UNI2 encoder: `feature_extraction/fe_uni2.py`
+
+### 4. K-Fold Cross-Validation (Case-wise)
+CSV files are generated to perform case-level k-fold cross-validation, scripts can be found in the `datasets/` folder.
+
+1. `generate_csv_chipai.py`: generates a CSV with slide ID, label, and tile path.
+2. `generate_csv_data_sample.py`: extracts patient ID, label, and sample number from `.h5` files resulting from feature extraction and stores the information in a CSV.
+3. `kfold_splits_patient.py`: performs case-wise stratified k-fold cross-validation and assigns `train`, `val`, and `test` splits.
+
+### 5. Feature Aggregation and Model Training
+Model training is performed using: `feature_aggregation/train_kfold.py`
+
+For model testing, use one of the following depending on the agregation model:
+  - AB-MIL aggregator: `feature_aggregation/test_kfold_AB-MIL.py`
+  - TransMIL aggregator: `feature_aggregation/test_kfold_transMIL.py`
+
+---
+
+## Requirements
+Please refer to the corresponding `requirements.txt` located inside each folder for software dependencies and environment setup.
 
