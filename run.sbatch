@@ -99,38 +99,4 @@ source $HOME/.bashrc
 
 ###############################################################################################################################################
 
-
-# conda activate gigapath
-# cd /ictstr01/home/aih/laia.mana/project/PROJ/feature_aggregation/
-
-# enc=dinobloom-g
-# method=transMIL
-
-# for kfold in {0..4}; do
-#     echo "Fold $kfold, method $method"
-
-#     python test_kfold_$method.py \
-#         --output /ictstr01/home/aih/laia.mana/project/DATA/BM/feature_aggregation/test/$enc \
-#         --data /ictstr01/home/aih/laia.mana/project/DATA/BM/kfold/kfold_$enc.csv \
-#         --checkpoint /ictstr01/home/aih/laia.mana/project/DATA/BM/feature_aggregation/train/$enc/$method/checkpoint_latest_kfold$kfold.pth \
-#         --encoder $enc \
-#         --method $method \
-#         --kfold $kfold 
-# done
-
-
-
-conda activate gigapath
-cd /ictstr01/home/aih/laia.mana/project/PROJ/feature_aggregation/
-
-enc=dinobloom-g
-method=AB-MIL
-
-
-python test_kfold_$method.py \
-    --output /ictstr01/home/aih/laia.mana/project/DATA/attn_2/$enc \
-    --data /ictstr01/home/aih/laia.mana/project/DATA/PB/attention_visualization/kfold/kfold_dino.csv \
-    --checkpoint '/ictstr01/home/aih/laia.mana/project/DATA/PB/aggr_train/tiles_dinobloom-g/AB-MIL/checkpoint_latest_kfold2.pth' \
-    --encoder $enc \
-    --method $method \
-    --kfold 2 
+sss
