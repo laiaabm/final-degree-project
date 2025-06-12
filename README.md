@@ -3,6 +3,12 @@
 This repository contains the code for detecting CHIP (Clonal Hematopoiesis of Indeterminate Potential) in peripheral blood (PB) and bone marrow (BM) smears. Two alternative approaches are implemented: a **patch-based** approach and a **single-cell-based** approach.
 
 ## Pipeline Overview
+![CHIP Detection Pipeline](images/workflow.png)
+**Figure 1**: Overview of the analytical pipeline. Beginning with BM or PB whole slide images, the
+process initiates with patching. Subsequently, two alternative paths are undertaken: direct utilization of PB
+or BM patches in the patch-based approach or segmentation of PB patches for the single-cell analysis. Finally,
+feature extraction is performed using UNI2 and DinoBloom-G, followed by feature aggregation through AB-
+MIL and TransMIL deep learning models for the final classification of CHIP.
 
 ### 1. Quality Control (PB Slides)
 Each 224×224 tile undergoes a preprocessing step to assess its quality. Tiles with excessive or insufficient cellular density and/or poor resolution are discarded. **Code**: `quality_control/quality_control.py`
