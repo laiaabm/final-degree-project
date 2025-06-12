@@ -20,8 +20,8 @@ Each white blood cell is segmented into 40×40 single-cell patches using a neura
 Features are extracted from the images, either from: 224×224 patches (patch-based), or 40×40 single-cell patches (single-cell-based).
 
 Two encoders are available:
-- DinoBloom-G: `feature_extraction/fe_dinobloom-g.py`
-- UNI2: `feature_extraction/fe_uni2.py`
+- **DinoBloom-G**: `feature_extraction/fe_dinobloom-g.py`
+- **UNI2**: `feature_extraction/fe_uni2.py`
 
 ### 4. K-Fold Cross-Validation
 CSV files are generated to perform case-wise k-fold cross-validation, scripts can be found in the `datasets/` folder.
@@ -34,8 +34,8 @@ CSV files are generated to perform case-wise k-fold cross-validation, scripts ca
 Model training is performed using: `feature_aggregation/train_kfold.py`
 
 For model testing, use one of the following depending on the agregation model:
-  - AB-MIL: `feature_aggregation/test_kfold_AB-MIL.py`
-  - TransMIL: `feature_aggregation/test_kfold_transMIL.py`
+  - **AB-MIL**: `feature_aggregation/test_kfold_AB-MIL.py`
+  - **TransMIL**: `feature_aggregation/test_kfold_transMIL.py`
 
 
 ## Models
