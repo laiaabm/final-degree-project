@@ -38,7 +38,7 @@ For model testing, use one of the following depending on the agregation model:
   - **TransMIL**: `feature_aggregation/test_kfold_transMIL.py`
 
 
-## Models
+## Model Weights
 The repository includes pretrained model weights for quality control and white blood cell segmentation. The pretrained networks for feature extraction can be downloaded from [UNI](https://github.com/mahmoodlab/UNI) and from [DinoBloom](https://github.com/marrlab/DinoBloom).
 
 
