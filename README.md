@@ -45,4 +45,15 @@ The repository includes pretrained model weights for quality control and white b
 ## Requirements
 Please refer to the corresponding `requirements.txt` located inside each folder for software dependencies and environment setup.
 
+
+## Report
+The project manuscript and the supplementary material can be accessed via this [link](https://github.com/laiaabm/final-degree-project/releases/tag/v1.0)
+
+
+## Author
+Laia Barcenilla Mañá  
+Bachelor's Degree in Bioinformatics  
+ESCI-UPF & Helmholtz Munich  
+June 2025  
+
 ---
