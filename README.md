@@ -47,7 +47,7 @@ Please refer to the corresponding `requirements.txt` located inside each folder 
 
 
 ## Report
-The project manuscript and the supplementary material can be accessed via this [link](https://github.com/laiaabm/final-degree-project/releases/tag/v1.0)
+The project manuscript and the supplementary material can be accessed via this [link](https://github.com/laiaabm/final-degree-project/releases/tag/v1.0).
 
 
 ## Author
