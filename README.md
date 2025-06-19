@@ -52,8 +52,8 @@ The project manuscript and the supplementary material can be accessed via this [
 
 ## Author
 Laia Barcenilla Mañá  
-Bachelor's Degree in Bioinformatics  
-ESCI-UPF & Helmholtz Munich  
+Bachelor's Degree in Bioinformatics, ESCI-UPF  
+Helmholtz Munich  
 June 2025  
 
 ---
